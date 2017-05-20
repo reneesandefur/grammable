@@ -46,4 +46,62 @@ RSpec.describe GramsController, type: :controller do
       expect(Gram.count).to eq 0
     end
   end
+  
+  describe "grams#show action" do
+    it "should successfully show the page details if gram is found" do
+      gram = FactoryGirl.create(:gram)
+      get :show, params: { id: gram.id }
+      expect(response).to have_http_status(:success)
+    end
+    
+    it "should show a 404 if gram not found" do
+      get :show, params: { id: 'tacocat' }
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+  
+  describe "gram#edit action" do
+    it "should succesfully show an edit form" do
+      gram = FactoryGirl.create(:gram)
+      get :edit, params: {id: gram.id }
+      expect(response).to have_http_status(:success)
+    end
+  
+    it "should show a 404 if gram not found" do
+      get :edit, params: {id: 'tacocat' }
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+  
+  describe "gram#update action" do
+    it "should successfully update gram" do
+      gram = FactoryGirl.create(:gram, message: "Initial message")
+      patch :update, {id: gram.id, gram: {message: "Changed" } }
+      expect(response).to redirect_to root_path
+      gram.reload
+      expect(gram.message).to eq "Changed"
+    end
+    
+    it "should show a 404 page if gram not found on update" do
+      patch :update, {id: 'swayzee', gram: {message: "Changed"} }
+      expect(response).to have_http_status(:not_found)
+    end
+    
+    it "should render edit form if with http status unprocessable_entity" do
+    gram = FactoryGirl.create(:gram, message: "Initial message")
+    patch :update, {id: gram.id, gram: {message: "" } }
+    expect(response).to have_http_status(:unprocessable_entity)
+    gram.reload
+    expect(gram.message).to eq "Initial message"
+    end
+  end
 end
+
+
+
+
+
+
+
+
+
