@@ -76,23 +76,37 @@ RSpec.describe GramsController, type: :controller do
   describe "gram#update action" do
     it "should successfully update gram" do
       gram = FactoryGirl.create(:gram, message: "Initial message")
-      patch :update, {id: gram.id, gram: {message: "Changed" } }
+      patch :update, params: {id: gram.id, gram: {message: "Changed" } }
       expect(response).to redirect_to root_path
       gram.reload
       expect(gram.message).to eq "Changed"
     end
     
     it "should show a 404 page if gram not found on update" do
-      patch :update, {id: 'swayzee', gram: {message: "Changed"} }
+      patch :update, params: {id: 'swayzee', gram: {message: "Changed"} }
       expect(response).to have_http_status(:not_found)
     end
     
     it "should render edit form if with http status unprocessable_entity" do
-    gram = FactoryGirl.create(:gram, message: "Initial message")
-    patch :update, {id: gram.id, gram: {message: "" } }
-    expect(response).to have_http_status(:unprocessable_entity)
-    gram.reload
-    expect(gram.message).to eq "Initial message"
+      gram = FactoryGirl.create(:gram, message: "Initial message")
+      patch :update, params: {id: gram.id, gram: {message: "" } }
+      expect(response).to have_http_status(:unprocessable_entity)
+      gram.reload
+      expect(gram.message).to eq "Initial message"
+    end
+  end
+    describe "gram#destroy action" do
+    it "should succesfully delete gram if gram found" do
+      gram = FactoryGirl.create(:gram)
+      delete :destroy, params: {id: gram.id }
+      expect(response).to redirect_to root_path
+      gram = Gram.find_by_id(gram.id)
+      expect(gram).to eq nil
+    end
+    
+    it "should show if gram not found" do
+      delete :destroy, params: {id: "ain't here" }
+      expect(response).to have_http_status(:not_found)
     end
   end
 end
