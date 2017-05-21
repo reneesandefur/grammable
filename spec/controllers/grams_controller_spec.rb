@@ -27,10 +27,10 @@ RSpec.describe GramsController, type: :controller do
       post :create, params: {gram: { message: "Hello" } }
       expect(response).to redirect_to new_user_session_path
     end
-    it "shoud successfully create a new gram in our database" do
+    it "should successfully create a new gram in our database" do
       user = FactoryGirl.create(:user)
       sign_in user
-      post :create, params: { gram: {message: "Hello"} }
+      post :create, params: { gram: {message: "Hello", image: fixture_file_upload('test.png', 'image/png')} }
       expect(response).to redirect_to root_path
       
       gram = Gram.last
@@ -156,10 +156,35 @@ RSpec.describe GramsController, type: :controller do
       expect(gram).to eq nil
     end
     
-    it "should show if gram not found" do
+    it "should show 404 if gram not found" do
       user = FactoryGirl.create(:user)
       sign_in user
       delete :destroy, params: {id: "ain't here" }
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+  
+  describe "comments#create action" do
+    it "should allow users to create comments on grams" do
+      gram = FactoryGirl.create(:gram)
+      user = FactoryGirl.create(:user)
+      sign_in user
+      post :create, params: {gram_id: gram.id, comment: {message: "awesome gram" }} 
+      expect(response).to redirect_to root_path
+      expect(gram.comments.length).to eq 1
+      expect(gram.comments.first.message).to eq "awesome gram"
+    end
+    
+    it "should require a user to be logged in to leave comment" do
+      gram = FactoryGirl.create(:gram)
+      post :create, params: {gram_id: gram.id, comment: {message: "awesome gram"}}
+      expect(response).to redirect_to new_user_session_path
+    end
+    
+    it "should show 404 if gram not found" do
+      user = FactoryGirl.create(:user)
+      sign_in user
+      post :create, params: {gram_id: "starlord", comment: {message: "awesome gram"}}    
       expect(response).to have_http_status(:not_found)
     end
   end
