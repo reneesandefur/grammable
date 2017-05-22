@@ -124,7 +124,7 @@ RSpec.describe GramsController, type: :controller do
     it "should render edit form if with http status unprocessable_entity" do
       user = FactoryGirl.create(:user)
       sign_in user
-      gram = FactoryGirl.create(:gram, message: "Initial message")
+      gram = FactoryGirl.create(:gram, message: "Initial message", user: user)
       patch :update, params: {id: gram.id, gram: {message: "" } }
       expect(response).to have_http_status(:unprocessable_entity)
       gram.reload
@@ -160,31 +160,6 @@ RSpec.describe GramsController, type: :controller do
       user = FactoryGirl.create(:user)
       sign_in user
       delete :destroy, params: {id: "ain't here" }
-      expect(response).to have_http_status(:not_found)
-    end
-  end
-  
-  describe "comments#create action" do
-    it "should allow users to create comments on grams" do
-      gram = FactoryGirl.create(:gram)
-      user = FactoryGirl.create(:user)
-      sign_in user
-      post :create, params: {gram_id: gram.id, comment: {message: "awesome gram" }} 
-      expect(response).to redirect_to root_path
-      expect(gram.comments.length).to eq 1
-      expect(gram.comments.first.message).to eq "awesome gram"
-    end
-    
-    it "should require a user to be logged in to leave comment" do
-      gram = FactoryGirl.create(:gram)
-      post :create, params: {gram_id: gram.id, comment: {message: "awesome gram"}}
-      expect(response).to redirect_to new_user_session_path
-    end
-    
-    it "should show 404 if gram not found" do
-      user = FactoryGirl.create(:user)
-      sign_in user
-      post :create, params: {gram_id: "starlord", comment: {message: "awesome gram"}}    
       expect(response).to have_http_status(:not_found)
     end
   end

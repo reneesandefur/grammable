@@ -2,7 +2,7 @@ class CommentsController < ApplicationController
   before_action :authenticate_user!, only: [:create]
   
   def create
-    @gram = Gram.find(params[:id])
+    @gram = Gram.find_by_id(params[:gram_id])
       return not_found if @gram.blank?
     @gram.comments.create(comment_params.merge(user: current_user))
     redirect_to root_path
